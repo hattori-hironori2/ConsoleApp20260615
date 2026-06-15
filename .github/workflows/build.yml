@@ -1,0 +1,26 @@
+name: .NET Framework 4.7.2 Build
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    # 1. 必ず Windows 環境を指定
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. MSBuild を使用できるようにセットアップ
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    # 3. NuGet パッケージの復元
+    - name: Restore NuGet packages
+      run: nuget restore ConsoleApp20260615.sln
+
+    # 4. MSBuild でソリューションをビルド
+    - name: Build solution
+      run: msbuild ConsoleApp20260615.sln /p:Configuration=Release
