@@ -1,0 +1,40 @@
+name: Upload Release Asset
+
+on:
+  push:
+    tags:
+      - 'v*' # v1.0.0 などのタグがPushされたら起動
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write # リリースを作成するために必須の権限
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------
+      # ここでビルドやファイルの圧縮を行う
+      # --------------------------------------------------
+      - name: Archive release files
+        shell: pwsh # PowerShellを使用してZIP化
+        run: |
+          # 出力用ディレクトリを作成
+          New-Item -ItemType Directory -Force -Path .\dist
+          
+          # Releaseフォルダ内のexeとdllを探してdistにコピー
+          Get-ChildItem -Recurse -Include *.exe, *.dll | Where-Object { $_.FullName -like "*\bin\Release\*" } | Copy-Item -Destination .\dist
+
+          # distフォルダごとZIP圧縮
+          Compress-Archive -Path .\dist\* -DestinationPath .\release.zip -Force
+
+      # --------------------------------------------------
+      # GitHub Releases へ自動作成＆アップロード
+      # --------------------------------------------------
+      - name: Create Release and Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release.zip # 上記で作成したファイル名と一致させる
+          generate_release_notes: true # コミット履歴からリリースノートを自動生成
