@@ -24,3 +24,12 @@ jobs:
     # 4. MSBuild でソリューションをビルド
     - name: Build solution
       run: msbuild ConsoleApp20260615.sln /p:Configuration=Release
+
+    # 5. ビルドされた exe ファイルを保存
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: my-application-exe
+        path: |
+          **/bin/Release/**/*.exe
+          **/bin/Release/**/*.dll
